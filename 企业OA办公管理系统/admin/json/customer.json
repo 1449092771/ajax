@@ -1,0 +1,15 @@
+[{
+	"id": 1,
+	"name": "张三",
+	"sex": 0,
+	"email": "zhangsan@qq.com",
+	"phone": "18395681245",
+	"QQ": "114756829",
+	"weixin": "zhangsan_smail",
+	"type": "重点客户",
+	"address": "北京市昌平区回龙观东大街135号",
+	"userId": 1,
+	"departmentId": 1,
+	"time": 1568640222269,
+	"state": 0
+}]

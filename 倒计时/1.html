@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+
+</head>
+<body>
+	<div>
+		<select name="" id="select">
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+		</select>
+		<div class="sumit">
+			按钮
+		</div>
+	</div>
+
+	<script>
+			window.onload=function(){
+				let $selectBox=$('#select');
+				var $selectIndex=0;
+
+				$selectBox.on('change', function(){
+					let _this=$(this),
+					$selectIndex=_this.val(); //我在这里改变的时候把最新的值赋值给了这个变量
+					console.log($selectIndex);
+				});
+				$('.sumit').on('click',function(){
+					console.log($selectIndex)
+				})
+
+			}
+	</script>
+	<script src="jquery-1.11.3.min.js"></script>
+</body>
+</html>
