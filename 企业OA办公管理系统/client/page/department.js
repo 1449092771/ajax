@@ -4,6 +4,15 @@ let departmentModel=(function(){
   $tableBox = $('.tableBox'),
     $tbody = $tableBox.children('tbody'),
     $departmentList=$('.departmentList');
+
+    //这里是获取新增部门里的元素
+    let $addDepName=$('.addDepName'), //名称
+        $addDesc = $('.addDesc'),
+        $addDepSubmit=$('.submit');
+
+
+    //新增部门获取结束
+
     
     let power = localStorage.getItem('power') || '';
     power = decodeURIComponent(power);
@@ -50,7 +59,6 @@ let departmentModel=(function(){
 				tarTag = target.tagName,
 				tarVal = target.innerText,
         $target = $(target);
-        alert(1111);
 
     //=>删除
 			if (tarTag === 'A' && tarVal === "删除") {
@@ -84,7 +92,31 @@ let departmentModel=(function(){
 
 
   //新增部门内容
-  
+  let addSubmitData=function(){
+    axios.post('/department/add',{
+      name:$addDepName.val(),
+      desc:$addDesc.val()   
+    }).then(result=>{
+      if(parseFloat(result.code)===0){
+        alert('新增部门信息成功')
+      }
+    }).catch(()=>{
+      alert('新增部门信息失败')
+    })
+  };
+
+  let addDepartment = function(){
+    // console.log(111);
+    $addDepSubmit.on('click',function(){
+      if(!$addDepName.val()){
+        alert('请填写部门名称')
+      }else if(!$addDesc.val()){
+        alert('请填写部门描述')
+      }else{
+        addSubmitData();
+      }
+    })
+  };
 
 
 
@@ -96,6 +128,8 @@ let departmentModel=(function(){
     init() {
       render();
       handleDelegate(); //编辑，删除
+
+      addDepartment()  //新增部门信息
 		}
   }
 
