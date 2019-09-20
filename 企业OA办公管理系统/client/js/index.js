@@ -28,7 +28,7 @@ $(function () {
 			部门管理
 		</h3>
 		<nav class="item">
-			<a href="page/departmentlist.html" target="_iframe" id="departmentList">部门列表</a>
+			<a href="page/departmentlist.html" target="_iframe">部门列表</a>
 			${power.includes('departhandle')?`<a href="page/departmentadd.html" target="_iframe">新增部门</a>`:``}
 		</nav>
 	</div>
@@ -48,7 +48,7 @@ $(function () {
 			客户管理
 		</h3>
 		<nav class="item">
-			<a href="page/customerlist.html" target="_iframe">我的客户</a>
+			<a href="page/customerlist.html?lx=my" target="_iframe">我的客户</a>
 			${power.includes('departcustomer') || power.includes('allcustomer')?`<a href="page/customerlist.html" target="_iframe">全部客户</a>`:``}
 			<a href="page/customeradd.html" target="_iframe">新增客户</a>
 		</nav>
@@ -137,7 +137,7 @@ $(function () {
 		} else {
 			$organize.css('display', 'none');
 			$customer.css('display', 'block');
-			$iframeBox.attr('src', 'page/customerlist.html');
+			$iframeBox.attr('src', 'page/customerlist.html?lx=my');
 		}
 	}
 	change(initIndex);

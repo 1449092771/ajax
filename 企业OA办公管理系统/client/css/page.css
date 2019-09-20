@@ -213,3 +213,29 @@
 	line-height: 40px;
 	cursor: pointer;
 }
+
+/* ==分页== */
+.pageBox {
+	font-size: 0;
+	line-height: 50px;
+	text-align: center;
+}
+
+.pageBox a,
+.pageBox .pageNum,
+.pageBox .pageNum li {
+	display: inline-block;
+	font-size: 14px;
+	margin: 0 5px;
+	color: #000;
+}
+
+.pageBox .pageNum li {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.pageBox .pageNum li.active {
+	color: #29E;
+	font-weight: bold;
+}

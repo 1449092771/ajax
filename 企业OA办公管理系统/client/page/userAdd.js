@@ -1,98 +1,182 @@
-let userAddModel = (function () {
-  //=>获取元素
-  let $userName=$('.username'),
-      $sexRadio=$('.sexRadio'), //性别的你级元素
-      $selectBox=$('.selectBox'),
-      $selectIndex=0,    //问题：我理解是上面定义一个变量，下面在change,select部门的时候就把这个变量赋值成最新的值，当点击提交的时候把这个值给后台就可以，但是实际上却是这个值都是0
-      $selectDuties=$('.selectDuties'),
+let useraddModule=(function(){
+  let $username=$('.username'),
+      $spanusername=$('.spanusername'),
+      $man=$('#man'),
+      $woman=$('#woman'),
       $useremail=$('.useremail'),
+      $spanuseremail=$('.spanuseremail'),
       $userphone=$('.userphone'),
-      $textarea=$('textarea'),
+      $spanuserphone = $('.spanuserphone'),
+      $userdepartment=$('.userdepartment'),
+      $userjob=$('.userjob'),
+      $userdesc=$('.userdesc'),
       $submit=$('.submit');
 
+  let userId=null,
+      isUpdate=false;
+      
+  //下拉框内容的绑定
+  let selectBind=function(){
+    let promise1=axios.get('/department/list');
+    let promise2=axios.get('/job/list');
+        
+      return axios.all([promise1,promise2]).then(results=>{
+        let [departmentResult,jobResult]=results;
+        //部门信息绑定
+        if(parseInt(departmentResult.code)===0){
+          let str=``;
+          departmentResult.data.forEach(item => {
+            str+=`<option value="${item.id}">${item.name}</option>`
+          });
+          $userdepartment.html(str);
+        }
 
+        //职务信息绑定
+        if(parseInt(jobResult.code)===0){
+          let str=``;
+          jobResult.data.forEach(item => {
+            str+=`<option value="${item.id}">${item.name}</option>`
+          });
+          $userjob.html(str);
+        }
 
-  //=>获取部门
-  let departmentMeg =function(){
-    let str = `<option value="0">全部</option>`,
-        departmentMsg=JSON.parse(localStorage.getItem('departmentMsg'));
-				departmentMsg.forEach(item => {
-					str += `<option value="${item.id}">${item.name}</option>`;
-				});
-				$selectBox.html(str);
-  }
-
-  //=>获取职务信息  /job/list
-  let selectJob = function () {
-    axios.get('/job/list').then(result => {
-			if (parseInt(result.code) === 0) {
-        let str = `<option value="0">全部</option>`;
-				result.data.forEach(item => {
-					str += `<option value="${item.id}">${item.name}</option>`;
-				});
-				$selectDuties.html(str);
-			}
-		}).catch(error=>{
-      console.log('111');
-    });
+      });
   };
-  
-  //=》改变部门获取选中的部门信息
-  $selectBox.on('change', function(){
-    let _this=$(this),
-    $selectIndex=_this.val(); //我在这里改变的时候把最新的值赋值给了这个变量
-  });
 
-  //=>把所有数据提交给后台
-  let submitData=function(){
-    axios.post('/user/add',{
-      name:$userName.val(),
-      sex:$('input:radio[name="sex"]:checked').val(),
-      email:$useremail.val(),
-      phone:$userphone.val(),
-      departmentId:$selectBox.find("option:selected").val(),
-      jobId:$selectDuties.find("option:selected").val(),
-      desc:$textarea.val()
+  //=>点击按钮提交信息
+  let submitHandle=function(){
+   
+    if(!checkUserName() || !checkUserEmail() || !checkUserPhone()) return;
+
+    //判断是修改还是增加
+    let URL=isUpdate ? '/user/update':'/user/add';
+    // console.log(URL);
+    axios.post(URL,{
+      userId,
+      name:$username.val().trim(),
+      sex:$woman.prop('checked')?1:0,
+      email:$useremail.val().trim(),
+      phone:$userphone.val().trim(),
+      departmentId:$userdepartment.val(),
+      jobId:$userjob.val(),
+      desc:$userdesc.val().trim()
     }).then(result=>{
-      if(parseFloat(result.code)===0){
+      if(parseInt(result.code)===0){
+        alert('当前操作成功，即将返回列表页',{
+          handled:()=>{
+            window.location.href="userlist.html";
+          }
+        })
+        return;
       }
+      return Promise.reject();
+    }).catch(reason=>{
+      alert('很遗憾当前操作失败了，请您稍后再试~')
     })
   }
 
-
-  //=>提交给服务器所有信息
-  $submit.on('click',function(){
-    //判断信息全不全
-    if(!$userName.val()){
-      alert('请填写用户名')
-    }else if(!$useremail.val()|| !$userphone.val()){
-      alert('请输入邮箱或者电话')
-    }else if(!$selectBox.find("option:selected").val()){
-      alert('请选择部门')
-    }else if(!$selectDuties.find("option:selected").val()){
-      alert('请选择职务')
-    }else if(!$textarea.val()){
-      alert('请填写自我介绍')
-    }else{
-      submitData();
-    }
-    
-
-      
-    
-  })
-
-
-
-
+ 	//=>表单验证
+	let checkUserName = function () {
+		let usernameVal = $username.val().trim();
+		if (usernameVal.length === 0) {
+			$spanusername.html('用户名为必填项，不能为空！');
+			return false; //=>验证失败要返回FALSE
+		}
+		$spanusername.html('');
+		return true; //=>验证成功要返回TRUE
+	};
+	let checkUserEmail = function () {
+		let useremialVal = $useremail.val().trim(),
+			reg = /^\w+((-\w+)|(\.\w+))*@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+		if (useremialVal.length === 0) {
+			$spanuseremail.html('邮箱为必填项，不能为空！');
+			return false;
+		}
+		if (!reg.test(useremialVal)) {
+			$spanuseremail.html('邮箱格式不正确！');
+			return false;
+		}
+		$spanuseremail.html('');
+		return true;
+	};
+	let checkUserPhone = function () {
+		let userphoneVal = $userphone.val().trim(),
+			reg = /^1\d{10}$/;
+		if (userphoneVal.length === 0) {
+			$spanuserphone.html('电话为必填项，不能为空！');
+			return false;
+		}
+		if (!reg.test(userphoneVal)) {
+			$spanuserphone.html('电话格式不正确！');
+			return false;
+		}
+		$spanuserphone.html('');
+		return true;
+	};
 
   return {
-		init() {
-      departmentMeg(); //部门信息
-      selectJob();  //职务信息
-		}
-	}
+    init(){
+      //=>表单验证
+			$username.on('blur', checkUserName);
+			$useremail.on('blur', checkUserEmail);
+			$userphone.on('blur', checkUserPhone);
+      //=>获取地址栏中问号传参信息
+      let paramsObj=window.location.href.queryURLParams();
+      if('userId' in paramsObj){
+        userId=paramsObj.userId;
+        isUpdate=true;
+      }
+      
+      //从服务器获取基本信息，显示在表单中
+      let queryBaseInfo=function(){
+        return axios.get('/user/info',{
+          params:{
+            userId
+          }
+        }).then(result=>{
+          if(parseInt(result.code)===0){
+            let {
+              name,
+              sex,
+              email,
+              phone,
+              departmentId,
+              jobId,
+              desc
+            } =result.data;
+            $username.val(name);
+            if(parseInt(sex)===1){
+              $woman.prop('checked',true)
+            }
+            $useremail.val(email);
+            $userphone.val(phone);
+            $userdesc.val(desc);
+            $userdepartment.val(departmentId);
+            $userjob.val(jobId);
+            return;
+          }
+          return Promise.reject();
+        })
+      }
 
+      selectBind().then(()=>{
+        if(isUpdate){
+          return queryBaseInfo();
+        }
+      }).then(()=>{
+        $submit.click(function(){
+          
+          submitHandle();
+        })
+      }).catch(()=>{
+        alert('当前页面获取相关信息出现问题，请稍后重试',{
+          handled:()=>{
+            window.location.href='userlist.html';
+          }
+        })
+      });
+    }
+  }
 })();
 
-userAddModel.init();
+useraddModule.init();
