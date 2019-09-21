@@ -24,7 +24,7 @@ let userListModel = (function () {
 		let departmentId = $selectBox.val(),
 			search = $searchInp.val().trim();
 		//=>获取数据
-		 return axios.get('/user/list', {
+		return axios.get('/user/list', {
 			params: {
 				departmentId, //=>departmentId:departmentId
 				search
@@ -73,7 +73,7 @@ let userListModel = (function () {
 		}).catch(() => {
 			//=>没数据列表清空
 			$tbody.html('');
-		}).then(()=>{
+		}).then(() => {
 			handleCheckbox();
 		});
 	};
@@ -82,8 +82,6 @@ let userListModel = (function () {
 	let selectBind = function () {
 		return axios.get('/department/list').then(result => {
 			if (parseInt(result.code) === 0) {
-				//这里自己加的为了在useradd.js里用
-				localStorage.setItem('departmentMsg',JSON.stringify(result.data));
 				let str = `<option value="0">全部</option>`;
 				result.data.forEach(item => {
 					str += `<option value="${item.id}">${item.name}</option>`;
@@ -162,88 +160,81 @@ let userListModel = (function () {
 				});
 				return;
 			}
-			
+
 		});
 	};
 
-	
 	//=>全选和非全选
-	let handleCheckbox =function(){
-		//获取元素
+	let handleCheckbox = function () {
 		let $checkHead = $thead.find('input[type="checkbox"]'),
-				$checks=$tbody.find('input[type="checkbox"]');
-				//=>点击实现全选或非全选，jq中设置属性有两种方式 attr/prop ,prop=》把能应用于表单元素的操作
-				
-				$checkHead.click(function(){
-					console.log($checkHead);
-					//=>jq控制单选或者复选框的选中，只需要让checked变为true/false
-					//=>$(this).prop('checked'):基于这种方式可以获取单选或者复选框的选中状态，结果也是true/false
-					$checks.prop('checked',$(this).prop('checked'));
-				});
+			$checks = $tbody.find('input[type="checkbox"]');
+		//=>点击实现全选或者非全选：JQ中设置属性有两种方式 attr / prop，prop一把能应用于表单元素的内置属性操作
+		$checkHead.click(function () {
+			//=>JQ控制单选或者复选框的选中，只需要让checked变为true/false
+			//=>$(this).prop('checked')：基于这种方式可以获取单选或者复选框的选中状态，结果也是true/false
+			$checks.prop('checked', $(this).prop('checked'));
+		});
+		$checks.click(function () {
+			let flag = true;
+			$checks.each((index, item) => {
+				if ($(item).prop('checked') === false) {
+					flag = false;
+					return false; //=>结束EACH循环
+				}
+			});
+			$checkHead.prop('checked', flag);
+		});
+	};
 
-				//如果下面有一个是没有选中的，全选按键就是不选中状态
-				$checks.click(function () {
-					let flag = true;
-					$checks.each((index, item) => {
-						if ($(item).prop('checked') === false) {
-							flag = false;
-							return false;//=>结束EACH循环
-						}
-					});
-					$checkHead.prop('checked', flag);
-				});
-
-	}
-
-	//批量删除
-	let batchDelete=function(){
-		function deleteX(index,$selects){
-			if(index> ($selects.length-1)){
+	//=>批量删除
+	let batchDelete = function () {
+		function deleteX(index, $selects) {
+			if (index > ($selects.length - 1)) {
+				//=>都删除完成了：重新渲染列表
 				render();
 				return;
-			};
+			}
 			let $item = $selects.eq(index),
-					userId=$item.parent().parent().attr('data-id');
-
-					axios.get('/user/delete',{
-						params:{
-							userId
-						}
-					}).then(result=>{
-						if(parseInt(result.code)===0){
-							deleteX(index+1,$selects);
-						}
-					})
+				userId = $item.parent().parent().attr('data-id');
+			axios.get('/user/delete', {
+				params: {
+					userId
+				}
+			}).then(result => {
+				if (parseInt(result.code) === 0) {
+					deleteX(index + 1, $selects);
+				}
+			});
 		}
 
-		//当点批量删除，需要获取所有checkbox被选中的
-		$deleteAll.click(function(){
-			let $selects=$tbody.find('input[type="checkbox"]').filter((index,item)=>{
-				//=> JQ filter支持回调函数，和数组中的filter一样，返回的结果是true,则当前item会被筛选到
-					return $(item).prop('checked')===true;
-			});
-			if($selects.length===0){
+		$deleteAll.click(function () {
+			let $selects = $tbody.find('input[type="checkbox"]')
+				.filter((index, item) => {
+					//=>JQ：FILTER支持回调函数，和数组中的FILTER一样，返回的结果是TRUE，则当前ITEM会被筛选到
+					return $(item).prop('checked') === true;
+				});
+			if ($selects.length === 0) {
 				alert('请您先选中要删除的内容~~');
 				return;
 			}
-			//=>selects包含所有被选中的复选框
-			alert(`您确定要删除这 ${$selects.length}项信息吗？`,{
+			//=>$SELECTS包含所有被选中的复选框
+			alert(`您确定要删除这${$selects.length}项信息吗？`, {
 				title: '警告！警告！当前操作很重要！',
-					confirm: true,
-					handled: msg => {
-						if(msg !== 'CONFIRM') return;
-						//=>递归从第一个开始删
-						deleteX(0,$selects);
-					}
-			})
-		})
-	}
+				confirm: true,
+				handled: function (msg) {
+					if (msg !== 'CONFIRM') return;
+					//=>递归从第一个开始删
+					deleteX(0, $selects);
+				}
+			});
+		});
+	};
 
 	return {
 		init() {
 			checkPower();
 			selectBind().then(() => {
-				return render();
+				render();
 			});
 			handleFilter();
 			handleDelegate();

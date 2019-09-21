@@ -3,7 +3,13 @@ let departmentModel=(function(){
   //获取元素
   $tableBox = $('.tableBox'),
     $tbody = $tableBox.children('tbody'),
-    $departmentList=$('.departmentList');
+    $departmentList=$('.departmentList'),
+    $spandepname=$('.spandepname'),
+    $spandepdesc=$('.spandepdesc');
+
+    //来判断是新增还是编辑
+    let departmentId=null,
+        isUpdate=false;
 
     //这里是获取新增部门里的元素
     let $addDepName=$('.addDepName'), //名称
@@ -19,7 +25,7 @@ let departmentModel=(function(){
 
   let render = function () {
 		//=>获取数据
-		axios.get('/department/list').then(result => {
+		return axios.get('/department/list').then(result => {
 			let {
         code,
         data
@@ -41,14 +47,14 @@ let departmentModel=(function(){
 				<td class="w20">${name}</td>
 				<td class="w40">${desc}</td>
 				<td class="w20">
-					<a href="javascript:;">编辑</a>
+					<a href="departmentadd.html?departmentId=${id}">编辑</a>
 					<a href="javascript:;">删除</a>
 				</td>
 			</tr>`;
       });
       $tbody.html(str);
     }).catch(()=>{
-      $tbody.html('没有内容')
+      $tbody.html(`<p style="text-align:center;padding:20px;font-size:16px">没有内容</p>`)
     });
   };
   
@@ -75,46 +81,83 @@ let departmentModel=(function(){
 								departmentId
 							}
 						}).then(result => {
-							if (parseInt(result.code) === 0) {
-                // render();
-                $departmentList.click();
-								return;
-							}
-							alert('当前操作失败，请稍后重试！');
-						});
+							if(parseInt(result.code)===0){
+                alert('当前操作成功，即将返回列表页',{
+                  handled:()=>{
+                    render();
+                    window.location.href="departmentlist.html";
+                  }
+                })
+                return;
+              }
+              return Promise.reject();
+						}).catch(()=>{
+              alert('当前操作失败，请稍后重试！');
+            });
 					}
-        })
+        },1000)
 
       }
+
+      //=>编辑
+			
 
     });
   }
 
 
   //新增部门内容
-  let addSubmitData=function(){
-    axios.post('/department/add',{
-      name:$addDepName.val(),
+  let addSubmitData=function(URL){
+    // console.log(URL);
+    axios.post(URL,{
+      departmentId:departmentId,
+      name:$addDepName.val(),//departmentId=1&name=xxx&desc=xxx
       desc:$addDesc.val()   
     }).then(result=>{
-      if(parseFloat(result.code)===0){
-        alert('新增部门信息成功')
+      if(parseInt(result.code)===0){
+        alert('当前操作成功，即将返回列表页',{
+          handled:()=>{
+            window.location.href="departmentlist.html";
+          }
+        })
+        return;
       }
+      return Promise.reject();
     }).catch(()=>{
       alert('新增部门信息失败')
     })
   };
 
+//从服务器获取基本信息，显示在表单中
+let queryBaseInfo=function(){
+  return axios.get('/department/info',{
+    params:{
+      departmentId
+    }
+  }).then(result=>{
+    if(parseInt(result.code)===0){
+      let {
+        id,
+        name,
+        desc
+      } =result.data;
+      $addDepName.val(name);
+      $addDesc.val(desc);
+      return;
+    }
+    return Promise.reject();
+  })
+}
+
   let addDepartment = function(){
-    // console.log(111);
+    
     $addDepSubmit.on('click',function(){
-      if(!$addDepName.val()){
-        alert('请填写部门名称')
-      }else if(!$addDesc.val()){
-        alert('请填写部门描述')
-      }else{
-        addSubmitData();
-      }
+      if(!depUserName() || !depUserDesc()) return;
+      //判断是修改还是增加
+      let URL=isUpdate ? '/department/update':'/department/add';
+      console.log(URL)
+        addSubmitData(URL);
+        
     })
   };
 
@@ -122,14 +165,51 @@ let departmentModel=(function(){
 
   //新增部门内容结束
 
+//=>表单验证
+let depUserName = function () {
+  let usernameVal = $addDepName.val().trim();
+  if (usernameVal.length === 0) {
+    $spandepname.html('用户名为必填项，不能为空！');
+    return false; //=>验证失败要返回FALSE
+  }
+  $spandepname.html('');
+  return true; //=>验证成功要返回TRUE
+};
+let depUserDesc = function () {
+  let userDesc = $addDesc.val().trim();
+  if (userDesc.length === 0) {
+    $spandepdesc.html('用户名为必填项，不能为空！');
+    return false; //=>验证失败要返回FALSE
+  }
+  $spandepdesc.html('');
+  return true; //=>验证成功要返回TRUE
+};
+
+
 
 
   return {
     init() {
-      render();
+      //=>表单验证
+			$addDepName.on('blur', depUserName);
+			$addDesc.on('blur', depUserDesc);
+      //=>获取地址栏中问号传参信息
+      let paramsObj=window.location.href.queryURLParams();
+      if('departmentId' in paramsObj){
+        departmentId=paramsObj.departmentId;
+        isUpdate=true;
+      }
+      
+      render().then(()=>{
+        if(isUpdate){
+          return queryBaseInfo();
+        }
+      }).then(()=>{
+        addDepartment()  //新增部门信息
+      });
       handleDelegate(); //编辑，删除
-
-      addDepartment()  //新增部门信息
+      
+     
 		}
   }
 

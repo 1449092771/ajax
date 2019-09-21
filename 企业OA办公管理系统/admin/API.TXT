@@ -83,7 +83,6 @@ RESULT：{
 URL：/user/update
 METHOD：POST
 PARAMS：userId=1&name=xxx&sex=0&email=xxx&phone=xxx&departmentId=1&jobId=1&desc=xxx
-
 RESULT：{
 	code:0  
 	codeText:'OK'

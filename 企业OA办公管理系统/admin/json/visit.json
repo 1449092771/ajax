@@ -1,8 +1,1 @@
-[{
-	"id": 1,
-	"customerId": 1,
-	"visitText": "今日去拜访客户，主要聊了一下关于接下来合作的细节问题，打算签订合同",
-	"visitTime": "2019-09-16",
-	"time": 1568640222269,
-	"state": 0
-}]
+[{"id":2,"customerId":"6","visitText":"定位撒无撒所多","visitTime":"2019-09-21","time":1568974137608,"state":0},{"id":3,"customerId":"1","visitText":"svsdfsdfds","visitTime":"2019-09-22","time":1569030581202,"state":1}]

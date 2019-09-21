@@ -49,7 +49,7 @@ $(function () {
 		</h3>
 		<nav class="item">
 			<a href="page/customerlist.html?lx=my" target="_iframe">我的客户</a>
-			${power.includes('departcustomer') || power.includes('allcustomer')?`<a href="page/customerlist.html" target="_iframe">全部客户</a>`:``}
+			${power.includes('departcustomer') || power.includes('allcustomer')?`<a href="page/customerlist.html?lx=all" target="_iframe">全部客户</a>`:``}
 			<a href="page/customeradd.html" target="_iframe">新增客户</a>
 		</nav>
 	</div>`;
